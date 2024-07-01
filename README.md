@@ -131,3 +131,59 @@ CREATE TABLE Sales (
 );
 
 ```
+
+## CRUD Operation on BOOKS table (DML)
+
+```sql
+-- Create
+INSERT INTO Books (title, genre, author_id, publisher_id, publication_date, type, price)
+VALUES ('Book C', 'Science Fiction', 1, 2, '2024-01-01', 'Audiobook', 30.00);
+
+-- Read
+SELECT * FROM Books WHERE book_id = 3;
+
+-- Update
+UPDATE Books SET price = 25.00 WHERE book_id = 3;
+
+-- Delete
+DELETE FROM Books WHERE book_id = 3;
+
+```
+
+## Required Queries
+
+```sql
+
+-- Power writers
+SELECT author_id, COUNT(*) as book_count
+FROM Books
+WHERE genre = 'Fiction' AND publication_date > NOW() - INTERVAL '5 years'
+GROUP BY author_id
+HAVING COUNT(*) > 3;
+
+-- Loyal Customers
+SELECT customer_id, total_spent
+FROM Customers
+WHERE total_spent > 100.00 AND registration_date > NOW() - INTERVAL '1 year';
+
+-- Well Reviewed books
+SELECT book_id, AVG(rating) as avg_rating
+FROM Reviews
+GROUP BY book_id
+HAVING AVG(rating) > (SELECT AVG(rating) FROM Reviews);
+
+-- Most popular genre
+SELECT genre, SUM(amount) as total_sales
+FROM Sales
+JOIN Books ON Sales.book_id = Books.book_id
+GROUP BY genre
+ORDER BY total_sales DESC
+LIMIT 1;
+
+-- 10 most recent reviews
+SELECT review_id, comment, review_date
+FROM Reviews
+ORDER BY review_date DESC
+LIMIT 10;
+
+```
