@@ -187,3 +187,38 @@ ORDER BY review_date DESC
 LIMIT 10;
 
 ```
+
+## Interface and Code to do modification
+
+```Typescript
+
+import { Pool } from 'pg';
+
+interface Author {
+    author_id: number;
+    name: string;
+    biography: string;
+    date_of_birth: Date;
+}
+
+
+const pool = new Pool({
+    user: 'admin',
+    host: 'localhost',
+    database: 'BookstoreDB',
+    password: 'admin',
+    port: 5432,
+});
+
+async function executeQuery(query: string, params: any[]): Promise<any> {
+    const client = await pool.connect();
+    try {
+        const res = await client.query(query, params);
+        return res.rows;
+    } catch (err) {
+        console.error(err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
