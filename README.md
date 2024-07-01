@@ -222,3 +222,72 @@ async function executeQuery(query: string, params: any[]): Promise<any> {
         client.release();
     }
 }
+
+// CRUD operations for Authors table
+async function createAuthor(author: Author) {
+    const query = INSERT INTO Authors (name, biography, date_of_birth) VALUES ($1, $2, $3) RETURNING *;
+    const params = [author.name, author.biography, author.date_of_birth];
+    return await executeQuery(query, params);
+}
+
+async function readAuthor(author_id: number) {
+    const query = SELECT * FROM Authors WHERE author_id = $1;
+    const params = [author_id];
+    return await executeQuery(query, params);
+}
+
+async function updateAuthor(author: Author) {
+    const query = UPDATE Authors SET name = $1, biography = $2, date_of_birth = $3 WHERE author_id = $4 RETURNING *;
+    const params = [author.name, author.biography, author.date_of_birth, author.author_id];
+    return await executeQuery(query, params);
+}
+
+async function deleteAuthor(author_id: number) {
+    const deleteBooksQuery = DELETE FROM Books WHERE author_id = $1;
+    const deleteAuthorQuery = DELETE FROM Authors WHERE author_id = $1 RETURNING *;
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query(deleteBooksQuery, [author_id]);
+        const res = await client.query(deleteAuthorQuery, [author_id]);
+        await client.query('COMMIT');
+        return res.rows;
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+
+
+// Example of using the functions
+(async () => {
+    // Create an author
+    const newAuthor: Author = {
+        author_id: 0, // Will be ignored by the database
+        name: 'New Author',
+        biography: 'Biography of new author',
+        date_of_birth: new Date('1970-01-01'),
+    };
+    console.log(await createAuthor(newAuthor));
+
+    // Read the author
+    console.log(await readAuthor(1));
+
+    // Update the author
+    const updatedAuthor: Author = {
+        author_id: 1,
+        name: 'Updated Author',
+        biography: 'Updated biography',
+        date_of_birth: new Date('1970-01-01'),
+    };
+    console.log(await updateAuthor(updatedAuthor));
+
+    // Delete the author
+    console.log(await deleteAuthor(1));
+})();
+
+```
